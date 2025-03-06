@@ -1,39 +1,27 @@
 # backend/main.py
-import torch
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from ai.model import QuantumLSTMGNN
 from api.routes import router as api_router
 from config import settings
+import torch
+from ai.model import QuantumLSTMGNN 
 
-app = FastAPI(
-    title="WaterGuard API",
-    description="Advanced Water Quality Prediction System",
-    version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc"
-)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await load_model()
+    yield
 
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = FastAPI()
+app.include_router(router, prefix="/api/v1")
 
-# Load ML model on startup
-@app.on_event("startup")
+@app.get("/")
+async def root():
+    return {"message": "WaterGuard API"}
+
 async def load_model():
     try:
-        # Initialize model
-        app.state.model = QuantumLSTMGNN(
-            input_dim=14, 
-            hidden_dim=512
-        )
-        
-        # Load trained weights
+        app.state.model = QuantumLSTMGNN(input_dim=14, hidden_dim=512)
         app.state.model.load_state_dict(
             torch.load(
                 settings.MODEL_PATH,
@@ -42,21 +30,35 @@ async def load_model():
             )
         )
         app.state.model.eval()
-        
         print("✅ Model loaded successfully")
-        
     except Exception as e:
-        print(f"❌ Failed to load model: {str(e)}")
-        raise RuntimeError("Model initialization failed") from e
+        print(f"❌ Model loading failed: {str(e)}")
+        raise
 
-# Include API routes
-app.include_router(api_router, prefix="/api/v1")
+app = FastAPI(
+    lifespan=lifespan,
+    title="WaterGuard API",
+    version="1.0.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+async def root():
+    return {
+        "message": "WaterGuard Prediction API",
+        "docs": "/api/docs",
+        "health_check": "/api/v1/health"
+    }
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        app, 
-        host="0.0.0.0", 
-        port=8000,
-        log_level="debug"
-    )
+    uvicorn.run(app, host="0.0.0.0", port=8000)
