@@ -1,12 +1,22 @@
+import torch  # Add this line
 from fastapi import APIRouter, WebSocket
 from ai.model import QuantumLSTMGNN
-import torch
+from fastapi import APIRouter, WebSocket
+# Replace current imports with:
+try:
+   from backend.ai.model import QuantumLSTMGNN  # Works in Docker/installed mode
+except ImportError:
+    from ai.model import QuantumLSTMGNN  # Works in development mode
 import numpy as np
 
 router = APIRouter()
 
 model = QuantumLSTMGNN().eval()
-model.load_state_dict(torch.load('models/pretrained/quantum_gnn.pt'))
+model.load_state_dict(torch.load(
+    'models/pretrained/quantum_gnn.pt',
+    map_location=torch.device('cpu'),
+    weights_only=True  # Security fix
+))
 
 @router.websocket("/ws/advanced-predict")
 async def realtime_prediction(websocket: WebSocket):

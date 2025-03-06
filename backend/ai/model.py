@@ -11,7 +11,8 @@ class QuantumLSTMGNN(nn.Module):
         self.quantum_layer = nn.Sequential(
             nn.Linear(hidden_dim*2, hidden_dim*4),
             nn.ELU(),
-            nn.Dropout(0.3)
+            nn.Dropout(0.3),  # Added comma
+        )  # Added closing parenthesis
         self.classifier = nn.Linear(hidden_dim*4, 5)  # 5 water quality classes
 
     def forward(self, x, edge_index, batch=None):
