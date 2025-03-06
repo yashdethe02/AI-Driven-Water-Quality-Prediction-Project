@@ -2,6 +2,10 @@
 
 # WaterGuard: Advanced Water Quality Prediction System
 
+## Installation
+```bash
+docker-compose up --build
+
 ## Research Contributions
 1. **Novel Quantum-GNN Architecture**: 3.2% accuracy improvement over baseline
 2. **Multi-Modal Explainability Framework**: SHAP + LIME integration
