@@ -1,31 +1,17 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import Dashboard from './components/Dashboard';
-import Water3D from './components/Water3D';
-import ChatPanel from './components/ChatPanel';
+import WaterQualityForm from './components/WaterQualityForm';
 
-const theme = createTheme({
-  palette: {
-    primary: { main: '#2c3e50' },
-    secondary: { main: '#3498db' }
-  }
-});
-
-export default function App() {
+function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <Router>
-        <Routes>
-          <Route path="/" element={
-            <div className="dashboard-container">
-              <Water3D />
-              <Dashboard />
-              <ChatPanel />
-            </div>
-          }/>
-        </Routes>
-      </Router>
-    </ThemeProvider>
+    <div className="App">
+      <header className="App-header">
+        <h1>AI-Driven Water Quality Prediction</h1>
+      </header>
+      <main>
+        <WaterQualityForm />
+      </main>
+    </div>
   );
 }
+
+export default App;

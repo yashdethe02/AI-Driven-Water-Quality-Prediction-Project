@@ -1,4 +1,3 @@
-# backend/main.py
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,8 +11,15 @@ async def lifespan(app: FastAPI):
     await load_model()
     yield
 
-app = FastAPI()
-app.include_router(router, prefix="/api/v1")
+app = FastAPI(
+    lifespan=lifespan,
+    title="WaterGuard API",
+    version="1.0.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc"
+)
+
+app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/")
 async def root():
@@ -35,14 +41,6 @@ async def load_model():
         print(f"❌ Model loading failed: {str(e)}")
         raise
 
-app = FastAPI(
-    lifespan=lifespan,
-    title="WaterGuard API",
-    version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc"
-)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -57,7 +55,6 @@ async def root():
         "docs": "/api/docs",
         "health_check": "/api/v1/health"
     }
-
 
 if __name__ == "__main__":
     import uvicorn
